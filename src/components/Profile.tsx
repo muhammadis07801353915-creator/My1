@@ -69,6 +69,15 @@ export default function Profile() {
     setShowNameModal(false);
   };
 
+  const handleAdminAccess = () => {
+    const code = window.prompt('Enter Admin Code:');
+    if (code === '400500') {
+      navigate('/admin');
+    } else if (code !== null) {
+      alert('Invalid Code!');
+    }
+  };
+
   return (
     <div className="p-4 pt-8 pb-24 text-white light-mode:text-black">
       <div className="flex flex-col items-center mb-8">
@@ -167,9 +176,9 @@ export default function Profile() {
         {/* Admin Panel Link for Testing */}
         <ProfileMenuItem 
           icon={LayoutDashboard} 
-          label={t.adminPanel} 
+          label="1" 
           textClass="text-blue-400"
-          onClick={() => navigate('/admin')}
+          onClick={handleAdminAccess}
         />
         
         <ProfileMenuItem icon={Bell} label={t.notifications} />

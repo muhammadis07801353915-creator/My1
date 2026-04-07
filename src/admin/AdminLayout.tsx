@@ -1,4 +1,4 @@
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminLayout() {
+  const navigate = useNavigate();
   const navItems = [
     { name: 'Dashboard', path: '/admin', icon: <LayoutDashboard size={20} /> },
     { name: 'Users', path: '/admin/users', icon: <Users size={20} /> },
@@ -18,6 +19,10 @@ export default function AdminLayout() {
     { name: 'Live TV', path: '/admin/livetv', icon: <Tv size={20} /> },
     { name: 'Settings', path: '/admin/settings', icon: <Settings size={20} /> },
   ];
+
+  const handleLogout = () => {
+    navigate('/');
+  };
 
   return (
     <div className="flex h-screen bg-[#0f1115] text-white font-sans overflow-hidden">
@@ -50,7 +55,10 @@ export default function AdminLayout() {
         </nav>
 
         <div className="p-4 border-t border-neutral-800">
-          <button className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors w-full">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors w-full"
+          >
             <LogOut size={20} />
             <span>Logout</span>
           </button>
