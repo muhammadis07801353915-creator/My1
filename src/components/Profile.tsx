@@ -2,17 +2,22 @@ import { Bell, Download, Shield, FileText, Star, LogOut, ChevronRight, Crown, La
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import ProSubscriptionModal from './ProSubscriptionModal';
+import { getProStatusLocal } from '../lib/pro';
 
 export default function Profile() {
   const navigate = useNavigate();
   const [showProModal, setShowProModal] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
     // Check initial theme
     if (document.documentElement.classList.contains('light-mode')) {
       setIsDarkMode(false);
     }
+    
+    // Check PRO status
+    setIsPro(getProStatusLocal());
   }, []);
 
   const toggleTheme = () => {
@@ -24,6 +29,13 @@ export default function Profile() {
       document.documentElement.classList.remove('light-mode');
       document.documentElement.classList.add('dark');
       setIsDarkMode(true);
+    }
+  };
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to log out? This will also deactivate PRO on this device.')) {
+      localStorage.removeItem('pro_data');
+      window.location.reload();
     }
   };
 
@@ -41,19 +53,23 @@ export default function Profile() {
       </div>
 
       <div 
-        onClick={() => setShowProModal(true)}
-        className="bg-gradient-to-r from-red-900/40 to-red-600/20 border border-red-900/50 rounded-2xl p-5 mb-8 flex items-center justify-between cursor-pointer hover:from-red-900/50 hover:to-red-600/30 transition group"
+        onClick={() => !isPro && setShowProModal(true)}
+        className={`${isPro ? 'bg-emerald-900/20 border-emerald-900/50' : 'bg-gradient-to-r from-red-900/40 to-red-600/20 border-red-900/50 hover:from-red-900/50 hover:to-red-600/30'} border rounded-2xl p-5 mb-8 flex items-center justify-between cursor-pointer transition group`}
       >
         <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-red-600/20 rounded-full flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform">
+          <div className={`w-12 h-12 ${isPro ? 'bg-emerald-600/20 text-emerald-500' : 'bg-red-600/20 text-red-500'} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform`}>
             <Crown size={24} />
           </div>
           <div>
-            <h3 className="font-semibold text-red-500 text-lg">Become a PRO</h3>
-            <p className="text-sm text-neutral-400 light-mode:text-neutral-600">Unlock all premium features</p>
+            <h3 className={`font-semibold ${isPro ? 'text-emerald-500' : 'text-red-500'} text-lg`}>
+              {isPro ? 'تەواو چالاک کراوە' : 'Become a PRO'}
+            </h3>
+            <p className="text-sm text-neutral-400 light-mode:text-neutral-600">
+              {isPro ? 'Enjoy all premium features' : 'Unlock all premium features'}
+            </p>
           </div>
         </div>
-        <ChevronRight size={24} className="text-red-500" />
+        {!isPro && <ChevronRight size={24} className="text-red-500" />}
       </div>
 
       <div className="space-y-2">
@@ -82,7 +98,7 @@ export default function Profile() {
         <ProfileMenuItem icon={Shield} label="Privacy Policy" />
         <ProfileMenuItem icon={FileText} label="Terms & Conditions" />
         <ProfileMenuItem icon={Star} label="Rate this app" />
-        <ProfileMenuItem icon={LogOut} label="Log out" textClass="text-red-500" />
+        <ProfileMenuItem icon={LogOut} label="Log out" textClass="text-red-500" onClick={handleLogout} />
       </div>
 
       <ProSubscriptionModal isOpen={showProModal} onClose={() => setShowProModal(false)} />
