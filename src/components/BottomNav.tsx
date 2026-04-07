@@ -1,12 +1,15 @@
 import { Home, Search, Tv, Bookmark, User } from 'lucide-react';
+import { useLanguage } from '../lib/LanguageContext';
 
 export default function BottomNav({ currentTab, onChange }: { currentTab: string, onChange: (tab: string) => void }) {
+  const { t } = useLanguage();
+  
   const tabs = [
-    { id: 'home', icon: Home, label: 'Home' },
-    { id: 'search', icon: Search, label: 'Search' },
-    { id: 'livetv', icon: Tv, label: 'Live TV' },
-    { id: 'watchlist', icon: Bookmark, label: 'Watchlist' },
-    { id: 'profile', icon: User, label: 'Profile' },
+    { id: 'home', icon: Home, label: t.home },
+    { id: 'search', icon: Search, label: t.search },
+    { id: 'livetv', icon: Tv, label: t.liveTv },
+    { id: 'watchlist', icon: Bookmark, label: t.watchlist },
+    { id: 'profile', icon: User, label: t.profile },
   ];
 
   return (

@@ -1,8 +1,10 @@
 import { Play, Plus, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../lib/LanguageContext';
 
 export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
+  const { t } = useLanguage();
   const [movies, setMovies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +53,7 @@ export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
           </div>
           <div className="flex space-x-4 w-full max-w-xs">
             <button className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-full flex items-center justify-center font-semibold transition">
-              <Play size={18} className="mr-2 fill-current" /> Watch Now
+              <Play size={18} className="mr-2 fill-current" /> {t.watchNow}
             </button>
             <button className="w-12 h-12 bg-neutral-800/80 hover:bg-neutral-700 rounded-full flex items-center justify-center text-white backdrop-blur-sm transition">
               <Plus size={24} />
@@ -63,13 +65,13 @@ export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
       {/* Top Contents */}
       <div className="mt-8 px-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Top Contents</h2>
-          <button className="text-red-500 text-sm font-medium">See all</button>
+          <h2 className="text-xl font-semibold">{t.topRated}</h2>
+          <button className="text-red-500 text-sm font-medium">{t.all}</button>
         </div>
         <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
           {topContents.map((movie, index) => (
             <div key={movie.id} className="relative flex-none w-32 cursor-pointer group" onClick={() => onSelect(movie)}>
-              <div className="absolute -left-3 -bottom-5 text-7xl font-black text-neutral-800/90 z-0 group-hover:text-red-600/50 transition-colors" style={{ WebkitTextStroke: '1px #404040' }}>
+              <div className={`absolute ${document.documentElement.dir === 'rtl' ? '-right-3' : '-left-3'} -bottom-5 text-7xl font-black text-neutral-800/90 z-0 group-hover:text-red-600/50 transition-colors`} style={{ WebkitTextStroke: '1px #404040' }}>
                 {index + 1}
               </div>
               <img src={movie.image} alt={movie.title} className="w-full h-48 object-cover rounded-lg shadow-lg relative z-10" />
@@ -81,8 +83,8 @@ export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
       {/* Movies */}
       <div className="mt-8 px-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Movies</h2>
-          <button className="text-red-500 text-sm font-medium">See all</button>
+          <h2 className="text-xl font-semibold">{t.movies}</h2>
+          <button className="text-red-500 text-sm font-medium">{t.all}</button>
         </div>
         <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
           {movies.filter(m => m.type === 'Movie').map((movie) => (

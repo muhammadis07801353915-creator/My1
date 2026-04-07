@@ -4,8 +4,10 @@ import { liveCategories, banners } from '../data/mockData';
 import { supabase } from '../lib/supabase';
 import ReactPlayer from 'react-player';
 import HlsPlayer from './HlsPlayer';
+import { useLanguage } from '../lib/LanguageContext';
 
 export default function LiveTV() {
+  const { t } = useLanguage();
   const [channels, setChannels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -151,11 +153,11 @@ export default function LiveTV() {
         <div className="flex items-center px-4 py-4 bg-[#22252D] sticky top-0 z-40 shadow-md">
           <button 
             onClick={() => setViewAllCategory(null)}
-            className="mr-4 hover:text-red-400 transition"
+            className="mr-4 rtl:mr-0 rtl:ml-4 hover:text-red-400 transition"
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft size={24} className="rtl:rotate-180" />
           </button>
-          <h1 className="text-xl font-bold">{viewAllCategory} Channels</h1>
+          <h1 className="text-xl font-bold">{viewAllCategory}</h1>
         </div>
         
         {/* Grid of all channels in category */}
@@ -195,12 +197,12 @@ export default function LiveTV() {
     <div className="bg-[#1A1D24] min-h-screen text-white pb-24 font-sans">
       {/* Header */}
       {isSearchOpen ? (
-        <div className="flex items-center w-full px-4 py-3 bg-[#22252D] sticky top-0 z-40 shadow-md space-x-3">
+        <div className="flex items-center w-full px-4 py-3 bg-[#22252D] sticky top-0 z-40 shadow-md space-x-3 rtl:space-x-reverse">
           <Search size={20} className="text-neutral-400" />
           <input 
             type="text" 
             autoFocus
-            placeholder="Search channels..." 
+            placeholder={t.searchChannels} 
             className="flex-1 bg-transparent text-white outline-none"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -214,10 +216,10 @@ export default function LiveTV() {
           <div className="flex-1 flex justify-start">
             <button 
               onClick={() => setIsCategoryModalOpen(true)}
-              className="flex items-center space-x-1 text-sm font-medium hover:text-red-400 transition"
+              className="flex items-center space-x-1 rtl:space-x-reverse text-sm font-medium hover:text-red-400 transition"
             >
               <ChevronDown size={16} />
-              <span>Category</span>
+              <span>{t.category}</span>
             </button>
           </div>
           
@@ -250,7 +252,7 @@ export default function LiveTV() {
       {/* Main Content */}
       {searchQuery.trim() ? (
         <div className="p-4">
-          <h2 className="text-lg font-bold mb-4">Search Results</h2>
+          <h2 className="text-lg font-bold mb-4">{t.searchResults}</h2>
           {searchResults.length > 0 ? (
             <div className="grid grid-cols-3 gap-3">
               {searchResults.map(channel => (
@@ -259,7 +261,7 @@ export default function LiveTV() {
                   onClick={() => setPlayingChannel(channel)}
                   className="bg-[#2A2D34] border border-neutral-700/50 rounded-xl aspect-[4/3] flex flex-col items-center justify-center p-3 cursor-pointer hover:bg-[#333740] hover:border-neutral-500 transition group relative overflow-hidden"
                 >
-                  <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[10px] flex items-center space-x-1 z-10">
+                  <div className="absolute top-2 right-2 rtl:right-auto rtl:left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[10px] flex items-center space-x-1 rtl:space-x-reverse z-10">
                     <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                     <span>LIVE</span>
                   </div>
@@ -297,9 +299,9 @@ export default function LiveTV() {
 
           <div className="p-4 space-y-6">
         {categoriesToRender.length === 0 ? (
-          <div className="text-center text-neutral-500 py-10">
-            No channels available
-          </div>
+            <div className="text-center text-neutral-500 py-10">
+              {t.noChannels}
+            </div>
         ) : categoriesToRender.map((category, index) => {
           const categoryChannels = channelsByCategory[category] || [];
           if (categoryChannels.length === 0) return null;
@@ -313,7 +315,7 @@ export default function LiveTV() {
                   onClick={() => setViewAllCategory(category)}
                   className="text-red-500 text-sm hover:text-red-400 transition"
                 >
-                  + View all
+                  + {t.viewAll}
                 </button>
               </div>
 
@@ -367,7 +369,7 @@ export default function LiveTV() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-[#22252D] w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
             <div className="p-4 border-b border-neutral-800">
-              <h3 className="text-lg font-semibold">Category</h3>
+              <h3 className="text-lg font-semibold">{t.category}</h3>
             </div>
             <div className="overflow-y-auto p-2">
               {liveCategories.map(category => (
@@ -377,7 +379,7 @@ export default function LiveTV() {
                     setSelectedCategory(category);
                     setIsCategoryModalOpen(false);
                   }}
-                  className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-[#2A2D34] transition text-left"
+                  className="w-full flex items-center space-x-3 rtl:space-x-reverse p-3 rounded-xl hover:bg-[#2A2D34] transition text-left rtl:text-right"
                 >
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedCategory === category ? 'border-red-500' : 'border-neutral-500'}`}>
                     {selectedCategory === category && <div className="w-2.5 h-2.5 bg-red-500 rounded-full" />}
@@ -393,7 +395,7 @@ export default function LiveTV() {
                 onClick={() => setIsCategoryModalOpen(false)}
                 className="w-full py-3 bg-neutral-800 hover:bg-neutral-700 rounded-xl font-medium transition"
               >
-                Close
+                {t.close}
               </button>
             </div>
           </div>
