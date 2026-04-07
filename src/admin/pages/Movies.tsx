@@ -8,6 +8,7 @@ import ImageUpload from '../../components/ImageUpload';
 
 export default function Movies() {
   const [contentList, setContentList] = useState<any[]>([]);
+  const [movieLists, setMovieLists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'form'>('list');
   const [activeTab, setActiveTab] = useState('basic');
@@ -16,6 +17,7 @@ export default function Movies() {
   
   const [formData, setFormData] = useState({
     title: '', type: 'Movie', genre: '', year: '', description: '', rating: '', image: '', backdrop: '', duration: '',
+    list_name: '',
     servers: [{ name: 'Server 1', url: '', quality: 'Auto' }]
   });
 
@@ -29,7 +31,13 @@ export default function Movies() {
 
   useEffect(() => {
     fetchMovies();
+    fetchMovieLists();
   }, []);
+
+  const fetchMovieLists = async () => {
+    const { data } = await supabase.from('movie_lists').select('*').order('order_index', { ascending: true });
+    if (data) setMovieLists(data);
+  };
 
   const fetchMovies = async () => {
     setLoading(true);
@@ -51,6 +59,7 @@ export default function Movies() {
   const handleAddNew = () => {
     setFormData({ 
       title: '', type: 'Movie', genre: '', year: '', description: '', rating: '', image: '', backdrop: '', duration: '',
+      list_name: '',
       servers: [{ name: 'Server 1', url: '', quality: 'Auto' }]
     });
     setEditingId(null);
@@ -79,6 +88,7 @@ export default function Movies() {
       image: item.image || '',
       backdrop: item.backdrop || '',
       duration: item.duration || '',
+      list_name: item.list_name || '',
       servers: parsedServers
     });
     setEditingId(item.id);
@@ -117,6 +127,7 @@ export default function Movies() {
       rating: formData.rating && !isNaN(parseFloat(formData.rating)) ? parseFloat(formData.rating) : null,
       image: formData.image,
       backdrop: formData.backdrop,
+      list_name: formData.list_name,
       video_url: JSON.stringify(formData.servers)
     };
 
@@ -239,8 +250,17 @@ export default function Movies() {
                     <input type="text" value={formData.rating} onChange={e => setFormData({...formData, rating: e.target.value})} placeholder="8.8" className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2.5 text-white outline-none focus:border-red-500 transition" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-neutral-300">Duration</label>
-                    <input type="text" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} placeholder="148 min" className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2.5 text-white outline-none focus:border-red-500 transition" />
+                    <label className="text-sm font-medium text-neutral-300">Home List / Category</label>
+                    <select 
+                      value={formData.list_name} 
+                      onChange={e => setFormData({...formData, list_name: e.target.value})}
+                      className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2.5 text-white outline-none focus:border-red-500 transition"
+                    >
+                      <option value="">None (Default)</option>
+                      {movieLists.map(list => (
+                        <option key={list.id} value={list.name}>{list.name}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
