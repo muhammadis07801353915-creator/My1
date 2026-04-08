@@ -89,19 +89,19 @@ export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
             <div className="absolute inset-0 z-0">
               <img 
                 src={currentFeatured.image} 
-                className="w-full h-full object-cover blur-3xl scale-110 opacity-40" 
+                className="w-full h-full object-cover blur-3xl scale-110 opacity-50" 
                 alt=""
               />
-              <div className="absolute inset-0 bg-neutral-950/60" />
+              <div className="absolute inset-0 bg-black/40" />
             </div>
 
             {/* Content Wrapper */}
-            <div className="relative z-10 h-full flex flex-col items-center justify-center px-6 pt-10">
-              {/* Vertical Poster */}
+            <div className="relative z-10 h-full flex flex-col items-center justify-start pt-12 px-6">
+              {/* Large Vertical Poster */}
               <motion.div 
-                initial={{ scale: 0.9, y: 20 }}
+                initial={{ scale: 0.95, y: 10 }}
                 animate={{ scale: 1, y: 0 }}
-                className="w-full max-w-[260px] aspect-[2/3] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 cursor-pointer"
+                className="w-full max-w-[320px] aspect-[2/3] rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.7)] border border-white/10 cursor-pointer"
                 onClick={() => onSelect(currentFeatured)}
               >
                 <img 
@@ -113,35 +113,29 @@ export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
               </motion.div>
 
               {/* Metadata Below Poster */}
-              <div className="mt-8 text-center">
-                <h1 className="text-3xl font-bold text-white mb-2 drop-shadow-md">{currentFeatured.title}</h1>
-                <div className="flex items-center justify-center space-x-2 text-neutral-400 text-sm mb-3">
-                  <span>{currentFeatured.genre?.split(',')[0]}</span>
+              <div className="mt-6 text-center w-full max-w-md">
+                <h1 className="text-2xl font-bold text-white mb-2 drop-shadow-md truncate px-4">{currentFeatured.title}</h1>
+                
+                <div className="flex items-center justify-center space-x-2 text-neutral-400 text-xs mb-3">
+                  <span>{currentFeatured.genre?.split(',')[0] || 'Action'}</span>
                   <span className="w-1 h-1 rounded-full bg-neutral-600" />
-                  <span>{currentFeatured.genre?.split(',')[1] || 'Action'}</span>
+                  <span>{currentFeatured.genre?.split(',')[1] || 'Adventure'}</span>
+                  <span className="w-1 h-1 rounded-full bg-neutral-600" />
+                  <span>{currentFeatured.genre?.split(',')[2] || 'Sci-Fi'}</span>
                 </div>
+                
                 <div className="flex items-center justify-center space-x-3">
-                  <div className="flex items-center text-yellow-500 font-bold text-lg">
-                    <Star size={20} className="mr-1.5 fill-current" />
+                  <div className="flex items-center text-yellow-500 font-bold text-base">
+                    <Star size={16} className="mr-1.5 fill-current" />
                     {currentFeatured.rating}
                   </div>
-                  <span className="text-neutral-700 text-xl">|</span>
-                  <span className="text-neutral-300 text-lg font-medium">{currentFeatured.year}</span>
+                  <span className="text-neutral-600 text-lg">|</span>
+                  <span className="text-neutral-400 text-base">{currentFeatured.year}</span>
                 </div>
               </div>
             </div>
           </motion.div>
         </AnimatePresence>
-
-        {/* Indicators */}
-        <div className="absolute bottom-10 left-0 right-0 z-20 flex justify-center space-x-2">
-          {featuredMovies.map((_, idx) => (
-            <div 
-              key={idx} 
-              className={`h-1.5 rounded-full transition-all duration-500 ${idx === currentFeaturedIndex ? 'w-8 bg-red-600' : 'w-2 bg-white/20'}`}
-            />
-          ))}
-        </div>
       </div>
 
       {/* Top Contents Section - Video Style */}
