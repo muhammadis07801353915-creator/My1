@@ -6,10 +6,13 @@ import Watchlist from './components/Watchlist';
 import Profile from './components/Profile';
 import Detail from './components/Detail';
 import BottomNav from './components/BottomNav';
+import { useHardwareBack } from './lib/useHardwareBack';
 
 export default function ClientApp() {
   const [currentTab, setCurrentTab] = useState('home');
   const [selectedItem, setSelectedItem] = useState<any>(null);
+
+  useHardwareBack(!!selectedItem, () => setSelectedItem(null));
 
   return (
     <div className="bg-neutral-950 light-mode:bg-gray-50 text-white light-mode:text-black min-h-screen flex flex-col font-sans max-w-md mx-auto relative shadow-2xl overflow-hidden">

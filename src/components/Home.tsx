@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../lib/LanguageContext';
 import { motion, AnimatePresence } from 'motion/react';
+import { useHardwareBack } from '../lib/useHardwareBack';
 
 export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
   const { t } = useLanguage();
@@ -11,6 +12,8 @@ export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
   const [loading, setLoading] = useState(true);
   const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
   const [viewingList, setViewingList] = useState<{ title: string, items: any[] } | null>(null);
+
+  useHardwareBack(!!viewingList, () => setViewingList(null));
 
   useEffect(() => {
     const fetchData = async () => {

@@ -3,12 +3,18 @@ import { useState, useMemo } from 'react';
 import ReactPlayer from 'react-player';
 import HlsPlayer from './HlsPlayer';
 import { useWatchlist } from '../lib/useWatchlist';
+import { useHardwareBack } from '../lib/useHardwareBack';
 
 export default function Detail({ item, onBack }: { item: any, onBack: () => void }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showServersModal, setShowServersModal] = useState(false);
   const [selectedServerUrl, setSelectedServerUrl] = useState('');
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
+
+  useHardwareBack(isPlaying || showServersModal, () => {
+    setIsPlaying(false);
+    setShowServersModal(false);
+  });
 
   const isBookmarked = isInWatchlist(item.id);
 
