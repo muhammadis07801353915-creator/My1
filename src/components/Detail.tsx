@@ -4,6 +4,7 @@ import ReactPlayer from 'react-player';
 import HlsPlayer from './HlsPlayer';
 import { useWatchlist } from '../lib/useWatchlist';
 import { useHardwareBack } from '../lib/useHardwareBack';
+import { Browser } from '@capacitor/browser';
 
 export default function Detail({ item, onBack }: { item: any, onBack: () => void }) {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -80,6 +81,16 @@ export default function Detail({ item, onBack }: { item: any, onBack: () => void
     }
     return finalUrl;
   };
+
+  const openInBrowser = async (url: string) => {
+    try {
+      await Browser.open({ url });
+    } catch (e) {
+      // Fallback if Capacitor is not available (e.g. in normal web view)
+      window.open(url, '_blank');
+    }
+  };
+
   return (
     <div className="bg-neutral-950 min-h-screen text-white pb-24">
       {/* Header / Backdrop or Player */}
@@ -112,16 +123,14 @@ export default function Detail({ item, onBack }: { item: any, onBack: () => void
                   
                   {/* Fallback button for mobile apps */}
                   <div className="absolute bottom-4 right-4 z-20">
-                    <a 
-                      href={getEmbedUrl(selectedServerUrl)} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
+                    <button 
+                      onClick={() => openInBrowser(getEmbedUrl(selectedServerUrl))}
                       className="bg-red-600/90 hover:bg-red-600 text-white px-3 py-2 sm:px-4 rounded-lg text-sm font-medium shadow-lg flex items-center gap-2 backdrop-blur-md transition-transform hover:scale-105"
                     >
                       <ExternalLink size={16} />
                       <span className="hidden sm:inline">Open in Browser</span>
                       <span className="sm:hidden">Open</span>
-                    </a>
+                    </button>
                   </div>
                 </div>
               ) : isM3u8 ? (
