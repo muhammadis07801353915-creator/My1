@@ -5,6 +5,7 @@ import Dashboard from './admin/pages/Dashboard';
 import Users from './admin/pages/Users';
 import Movies from './admin/pages/Movies';
 import MovieLists from './admin/pages/MovieLists';
+import LiveTVCategories from './admin/pages/LiveTVCategories';
 import LiveTVAdmin from './admin/pages/LiveTVAdmin';
 import SettingsAdmin from './admin/pages/Settings';
 import { LanguageProvider } from './lib/LanguageContext';
@@ -23,6 +24,7 @@ export default function App() {
             <Route path="users" element={<Users />} />
             <Route path="movies" element={<Movies />} />
             <Route path="movie-lists" element={<MovieLists />} />
+            <Route path="livetv-categories" element={<LiveTVCategories />} />
             <Route path="livetv" element={<LiveTVAdmin />} />
             <Route path="settings" element={<SettingsAdmin />} />
             {/* Fallback for unknown admin routes */}

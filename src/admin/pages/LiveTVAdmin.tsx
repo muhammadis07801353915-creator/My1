@@ -1,29 +1,42 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, Tv } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Tv, ArrowUp, ArrowDown } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import ImageUpload from '../../components/ImageUpload';
 
 export default function LiveTVAdmin() {
   const [channels, setChannels] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'form'>('list');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   
   const [formData, setFormData] = useState({
-    name: '', category: 'News', status: 'Active', stream_url: '', image: ''
+    name: '', category: '', status: 'Active', stream_url: '', image: ''
   });
 
   useEffect(() => {
     fetchChannels();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase.from('channel_categories').select('*').order('order_index', { ascending: true });
+    if (data) {
+      setCategories(data);
+      if (data.length > 0 && !formData.category) {
+        setFormData(prev => ({ ...prev, category: data[0].name }));
+      }
+    }
+  };
 
   const fetchChannels = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('channels')
       .select('*')
-      .order('id', { ascending: false });
+      .order('order_index', { ascending: true });
     
     if (error) {
       console.error("Error fetching channels:", error);
@@ -36,7 +49,13 @@ export default function LiveTVAdmin() {
   };
 
   const handleAddNew = () => {
-    setFormData({ name: '', category: 'News', status: 'Active', stream_url: '', image: '' });
+    setFormData({ 
+      name: '', 
+      category: categories.length > 0 ? categories[0].name : 'News', 
+      status: 'Active', 
+      stream_url: '', 
+      image: '' 
+    });
     setEditingId(null);
     setErrorMsg(null);
     setView('form');
@@ -76,13 +95,25 @@ export default function LiveTVAdmin() {
     }
 
     setSaving(true);
-    const payload = {
+    
+    // Get next order index for this category if new
+    let nextOrder = 0;
+    if (!editingId) {
+      const catChannels = channels.filter(c => c.category === formData.category);
+      nextOrder = catChannels.length > 0 ? Math.max(...catChannels.map(c => c.order_index || 0)) + 1 : 0;
+    }
+
+    const payload: any = {
       name: formData.name,
       category: formData.category,
       status: formData.status,
       stream_url: formData.stream_url,
       image: formData.image
     };
+
+    if (!editingId) {
+      payload.order_index = nextOrder;
+    }
 
     try {
       if (editingId) {
@@ -134,13 +165,18 @@ export default function LiveTVAdmin() {
             <div className="space-y-2">
               <label className="text-sm font-medium text-neutral-300">Category</label>
               <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2.5 text-white outline-none focus:border-red-500 transition">
-                <option>News</option>
-                <option>Entertainment</option>
-                <option>Sports</option>
-                <option>Kids</option>
-                <option>Movies</option>
-                <option>Education</option>
-                <option>Cooking</option>
+                {categories.length > 0 ? (
+                  categories.map(cat => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  ))
+                ) : (
+                  <>
+                    <option>News</option>
+                    <option>Entertainment</option>
+                    <option>Sports</option>
+                    <option>Kids</option>
+                  </>
+                )}
               </select>
             </div>
           </div>
@@ -170,6 +206,28 @@ export default function LiveTVAdmin() {
     );
   }
 
+  const moveChannel = async (index: number, direction: 'up' | 'down') => {
+    const filteredChannels = channels.filter(c => selectedCategory === 'All' || c.category === selectedCategory);
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    if (targetIndex < 0 || targetIndex >= filteredChannels.length) return;
+
+    const currentItem = filteredChannels[index];
+    const targetItem = filteredChannels[targetIndex];
+
+    try {
+      await Promise.all([
+        supabase.from('channels').update({ order_index: targetItem.order_index }).eq('id', currentItem.id),
+        supabase.from('channels').update({ order_index: currentItem.order_index }).eq('id', targetItem.id)
+      ]);
+      fetchChannels();
+    } catch (err) {
+      console.error("Error reordering channels:", err);
+    }
+  };
+
+  const filteredChannels = channels.filter(c => selectedCategory === 'All' || c.category === selectedCategory);
+
   return (
     <div className="text-white space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -189,11 +247,25 @@ export default function LiveTVAdmin() {
               className="bg-transparent border-none outline-none text-sm ml-2 w-full text-white"
             />
           </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-neutral-400">Filter:</span>
+            <select 
+              value={selectedCategory} 
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="bg-neutral-900 border border-neutral-800 text-white text-sm rounded-lg px-3 py-2 outline-none"
+            >
+              <option value="All">All Categories</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.name}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-neutral-900/50 text-neutral-400">
               <tr>
+                <th className="px-6 py-4 font-medium">Order</th>
                 <th className="px-6 py-4 font-medium">Channel Name</th>
                 <th className="px-6 py-4 font-medium">Category</th>
                 <th className="px-6 py-4 font-medium">Status</th>
@@ -203,14 +275,32 @@ export default function LiveTVAdmin() {
             <tbody className="divide-y divide-neutral-800">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-neutral-500">Loading channels...</td>
+                  <td colSpan={5} className="px-6 py-8 text-center text-neutral-500">Loading channels...</td>
                 </tr>
-              ) : channels.length === 0 ? (
+              ) : filteredChannels.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-neutral-500">No channels found</td>
+                  <td colSpan={5} className="px-6 py-8 text-center text-neutral-500">No channels found</td>
                 </tr>
-              ) : channels.map((item) => (
+              ) : filteredChannels.map((item, index) => (
                 <tr key={item.id} className="hover:bg-neutral-800/50 transition">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center space-x-1">
+                      <button 
+                        disabled={index === 0}
+                        onClick={() => moveChannel(index, 'up')}
+                        className={`p-1 rounded hover:bg-neutral-700 transition ${index === 0 ? 'text-neutral-700 cursor-not-allowed' : 'text-neutral-400'}`}
+                      >
+                        <ArrowUp size={14} />
+                      </button>
+                      <button 
+                        disabled={index === filteredChannels.length - 1}
+                        onClick={() => moveChannel(index, 'down')}
+                        className={`p-1 rounded hover:bg-neutral-700 transition ${index === filteredChannels.length - 1 ? 'text-neutral-700 cursor-not-allowed' : 'text-neutral-400'}`}
+                      >
+                        <ArrowDown size={14} />
+                      </button>
+                    </div>
+                  </td>
                   <td className="px-6 py-4 font-medium text-white flex items-center space-x-3">
                     <div className="w-8 h-8 bg-neutral-800 rounded flex items-center justify-center overflow-hidden">
                       {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" /> : <Tv size={16} className="text-neutral-400" />}

@@ -9,6 +9,7 @@ import { useLanguage } from '../lib/LanguageContext';
 export default function LiveTV() {
   const { t } = useLanguage();
   const [channels, setChannels] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -20,19 +21,29 @@ export default function LiveTV() {
   const [playingChannel, setPlayingChannel] = useState<any | null>(null);
 
   useEffect(() => {
-    const fetchChannels = async () => {
-      const { data, error } = await supabase
+    const fetchData = async () => {
+      setLoading(true);
+      
+      // Fetch Categories
+      const { data: catData } = await supabase
+        .from('channel_categories')
+        .select('*')
+        .order('order_index', { ascending: true });
+      
+      if (catData) setCategories(catData);
+
+      // Fetch Channels
+      const { data: chanData } = await supabase
         .from('channels')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('order_index', { ascending: true });
       
-      if (data) {
-        setChannels(data);
-      }
+      if (chanData) setChannels(chanData);
+      
       setLoading(false);
     };
 
-    fetchChannels();
+    fetchData();
   }, []);
 
   // Group channels by category
@@ -45,7 +56,7 @@ export default function LiveTV() {
   }, {} as Record<string, any[]>);
 
   const categoriesToRender = selectedCategory === 'All' 
-    ? Object.keys(channelsByCategory) 
+    ? categories.map(c => c.name)
     : [selectedCategory];
 
   const searchResults = searchQuery.trim()
@@ -321,7 +332,7 @@ export default function LiveTV() {
 
               {/* Channel Grid */}
               <div className="grid grid-cols-3 gap-3">
-                {categoryChannels.map(channel => (
+                {categoryChannels.slice(0, 6).map(channel => (
                   <div 
                     key={channel.id} 
                     onClick={() => setPlayingChannel(channel)}
@@ -372,20 +383,34 @@ export default function LiveTV() {
               <h3 className="text-lg font-semibold">{t.category}</h3>
             </div>
             <div className="overflow-y-auto p-2">
-              {liveCategories.map(category => (
+              <button
+                onClick={() => {
+                  setSelectedCategory('All');
+                  setIsCategoryModalOpen(false);
+                }}
+                className="w-full flex items-center space-x-3 rtl:space-x-reverse p-3 rounded-xl hover:bg-[#2A2D34] transition text-left rtl:text-right"
+              >
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedCategory === 'All' ? 'border-red-500' : 'border-neutral-500'}`}>
+                  {selectedCategory === 'All' && <div className="w-2.5 h-2.5 bg-red-500 rounded-full" />}
+                </div>
+                <span className={selectedCategory === 'All' ? 'text-white font-medium' : 'text-neutral-400'}>
+                  All
+                </span>
+              </button>
+              {categories.map(cat => (
                 <button
-                  key={category}
+                  key={cat.id}
                   onClick={() => {
-                    setSelectedCategory(category);
+                    setSelectedCategory(cat.name);
                     setIsCategoryModalOpen(false);
                   }}
                   className="w-full flex items-center space-x-3 rtl:space-x-reverse p-3 rounded-xl hover:bg-[#2A2D34] transition text-left rtl:text-right"
                 >
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedCategory === category ? 'border-red-500' : 'border-neutral-500'}`}>
-                    {selectedCategory === category && <div className="w-2.5 h-2.5 bg-red-500 rounded-full" />}
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedCategory === cat.name ? 'border-red-500' : 'border-neutral-500'}`}>
+                    {selectedCategory === cat.name && <div className="w-2.5 h-2.5 bg-red-500 rounded-full" />}
                   </div>
-                  <span className={selectedCategory === category ? 'text-white font-medium' : 'text-neutral-400'}>
-                    {category}
+                  <span className={selectedCategory === cat.name ? 'text-white font-medium' : 'text-neutral-400'}>
+                    {cat.name}
                   </span>
                 </button>
               ))}
