@@ -21,7 +21,10 @@ export default function LiveTVCategories() {
       .select('*')
       .order('order_index', { ascending: true });
     
-    if (data) {
+    if (error) {
+      console.error("Error fetching categories:", error);
+      alert('Error loading categories: ' + error.message);
+    } else if (data) {
       setCategories(data);
     }
     setLoading(false);
@@ -41,7 +44,8 @@ export default function LiveTVCategories() {
       setNewName('');
       fetchCategories();
     } else {
-      alert('Error creating category. Make sure "channel_categories" table exists.');
+      console.error("Error creating category:", error);
+      alert('Error creating category: ' + error.message);
     }
     setSaving(false);
   };
