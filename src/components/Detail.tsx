@@ -1,12 +1,16 @@
-import { ArrowLeft, Share2, BookmarkPlus, Play, Star, Download, MonitorPlay, X, Server } from 'lucide-react';
+import { ArrowLeft, Share2, BookmarkPlus, BookmarkCheck, Play, Star, Download, MonitorPlay, X, Server } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import ReactPlayer from 'react-player';
 import HlsPlayer from './HlsPlayer';
+import { useWatchlist } from '../lib/useWatchlist';
 
 export default function Detail({ item, onBack }: { item: any, onBack: () => void }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showServersModal, setShowServersModal] = useState(false);
   const [selectedServerUrl, setSelectedServerUrl] = useState('');
+  const { isInWatchlist, toggleWatchlist } = useWatchlist();
+
+  const isBookmarked = isInWatchlist(item.id);
 
   const servers = useMemo(() => {
     try {
@@ -109,8 +113,11 @@ export default function Detail({ item, onBack }: { item: any, onBack: () => void
                 <ArrowLeft size={20} />
               </button>
               <div className="flex space-x-3 pointer-events-auto">
-                <button className="w-10 h-10 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center backdrop-blur-md transition">
-                  <BookmarkPlus size={20} />
+                <button 
+                  onClick={() => toggleWatchlist(item)}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition ${isBookmarked ? 'bg-red-600 text-white' : 'bg-black/40 hover:bg-black/60'}`}
+                >
+                  {isBookmarked ? <BookmarkCheck size={20} /> : <BookmarkPlus size={20} />}
                 </button>
                 <button className="w-10 h-10 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center backdrop-blur-md transition">
                   <Share2 size={20} />

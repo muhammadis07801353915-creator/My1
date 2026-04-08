@@ -1,14 +1,31 @@
 import { Search as SearchIcon, Star } from 'lucide-react';
-import { useState } from 'react';
-import { movies } from '../data/mockData';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { useLanguage } from '../lib/LanguageContext';
 
 export default function Search({ onSelect }: { onSelect: (item: any) => void }) {
   const { t } = useLanguage();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('All');
+  const [movies, setMovies] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const filters = [t.all, t.movies, t.series];
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from('movies')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (data) setMovies(data);
+      setLoading(false);
+    };
+
+    fetchMovies();
+  }, []);
 
   const filteredMovies = movies.filter(m => {
     if (filter === t.movies && m.type !== 'Movie') return false;
@@ -44,21 +61,32 @@ export default function Search({ onSelect }: { onSelect: (item: any) => void }) 
         ))}
       </div>
 
-      <div className="space-y-4">
-        {filteredMovies.map(movie => (
-          <div key={movie.id} className="flex space-x-4 rtl:space-x-reverse bg-neutral-900/50 hover:bg-neutral-900 rounded-xl p-3 cursor-pointer transition border border-transparent hover:border-neutral-800" onClick={() => onSelect(movie)}>
-            <img src={movie.image} alt={movie.title} className="w-24 h-32 object-cover rounded-lg" />
-            <div className="flex-1 py-2">
-              <h3 className="font-semibold text-lg">{movie.title}</h3>
-              <div className="flex items-center text-sm text-neutral-400 mt-1 mb-2">
-                <span className="flex items-center text-yellow-500 mr-3 rtl:mr-0 rtl:ml-3"><Star size={14} className="mr-1 rtl:mr-0 rtl:ml-1 fill-current" /> {movie.rating}</span>
-                <span>{movie.year}</span>
+      {loading ? (
+        <div className="flex justify-center py-10">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredMovies.map(movie => (
+            <div key={movie.id} className="flex space-x-4 rtl:space-x-reverse bg-neutral-900/50 hover:bg-neutral-900 rounded-xl p-3 cursor-pointer transition border border-transparent hover:border-neutral-800" onClick={() => onSelect(movie)}>
+              <img src={movie.image} alt={movie.title} className="w-24 h-32 object-cover rounded-lg" />
+              <div className="flex-1 py-2">
+                <h3 className="font-semibold text-lg">{movie.title}</h3>
+                <div className="flex items-center text-sm text-neutral-400 mt-1 mb-2">
+                  <span className="flex items-center text-yellow-500 mr-3 rtl:mr-0 rtl:ml-3"><Star size={14} className="mr-1 rtl:mr-0 rtl:ml-1 fill-current" /> {movie.rating}</span>
+                  <span>{movie.year}</span>
+                </div>
+                <p className="text-sm text-neutral-500 line-clamp-2">{movie.genre}</p>
               </div>
-              <p className="text-sm text-neutral-500 line-clamp-2">{movie.genre}</p>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+          {filteredMovies.length === 0 && (
+            <div className="text-center py-10 text-neutral-500">
+              No results found
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

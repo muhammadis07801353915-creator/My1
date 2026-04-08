@@ -10,6 +10,7 @@ export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
   const [movieLists, setMovieLists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
+  const [viewingList, setViewingList] = useState<{ title: string, items: any[] } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,6 +65,38 @@ export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
 
   if (movies.length === 0) {
     return <div className="flex items-center justify-center h-[65vh] text-neutral-400">No content available</div>;
+  }
+
+  if (viewingList) {
+    return (
+      <div className="pb-24 pt-6 px-4">
+        <div className="flex items-center mb-6">
+          <button 
+            onClick={() => setViewingList(null)}
+            className="w-10 h-10 bg-neutral-900 hover:bg-neutral-800 rounded-full flex items-center justify-center mr-4 transition"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <h1 className="text-2xl font-bold">{viewingList.title}</h1>
+        </div>
+        
+        <div className="grid grid-cols-3 gap-4">
+          {viewingList.items.map((movie) => (
+            <div key={movie.id} className="cursor-pointer group" onClick={() => onSelect(movie)}>
+              <div className="relative overflow-hidden rounded-lg shadow-lg aspect-[2/3]">
+                <img 
+                  src={movie.image} 
+                  alt={movie.title} 
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <h3 className="mt-2 text-xs font-medium truncate text-neutral-200">{movie.title}</h3>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -141,9 +174,12 @@ export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
       {/* Top Contents Section - Video Style */}
       {topContents.length > 0 && (
         <div className="mt-6 px-4">
-          <h2 className="text-2xl font-bold text-white mb-6">Top Contents</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-white">Top Contents</h2>
+            <button onClick={() => setViewingList({ title: 'Top Contents', items: topContents })} className="text-red-500 text-sm font-medium">{t.all}</button>
+          </div>
           <div className="flex space-x-4 overflow-x-auto pb-8 scrollbar-hide -mx-4 px-4">
-            {topContents.map((movie, index) => (
+            {topContents.slice(0, 3).map((movie, index) => (
               <div key={movie.id} className="flex-none w-44 relative cursor-pointer group" onClick={() => onSelect(movie)}>
                 <div className="relative overflow-hidden rounded-xl shadow-lg aspect-[2/3] border border-white/5">
                   <img 
@@ -179,10 +215,10 @@ export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
           <div key={list.id} className="mt-8 px-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">{list.name}</h2>
-              <button className="text-red-500 text-sm font-medium">{t.all}</button>
+              <button onClick={() => setViewingList({ title: list.name, items: listMovies })} className="text-red-500 text-sm font-medium">{t.all}</button>
             </div>
             <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-              {listMovies.map((movie) => (
+              {listMovies.slice(0, 3).map((movie) => (
                 <div key={movie.id} className="flex-none w-32 cursor-pointer group" onClick={() => onSelect(movie)}>
                   <div className="relative overflow-hidden rounded-lg shadow-lg aspect-[2/3]">
                     <img 
@@ -205,10 +241,10 @@ export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
       <div className="mt-8 px-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">{t.movies}</h2>
-          <button className="text-red-500 text-sm font-medium">{t.all}</button>
+          <button onClick={() => setViewingList({ title: t.movies, items: movies.filter(m => !m.list_name || m.list_name === '') })} className="text-red-500 text-sm font-medium">{t.all}</button>
         </div>
         <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-          {movies.filter(m => !m.list_name || m.list_name === '').map((movie) => (
+          {movies.filter(m => !m.list_name || m.list_name === '').slice(0, 3).map((movie) => (
             <div key={movie.id} className="flex-none w-32 cursor-pointer group" onClick={() => onSelect(movie)}>
               <div className="relative overflow-hidden rounded-lg shadow-lg aspect-[2/3]">
                 <img 
