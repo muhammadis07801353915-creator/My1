@@ -69,11 +69,15 @@ export default function Profile() {
     setShowNameModal(false);
   };
 
-  const handleAdminAccess = () => {
-    const code = window.prompt('Enter Admin Code:');
-    if (code === '400500') {
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [adminCode, setAdminCode] = useState('');
+
+  const handleAdminSubmit = () => {
+    if (adminCode === '400500') {
+      setShowAdminModal(false);
+      setAdminCode('');
       navigate('/admin');
-    } else if (code !== null) {
+    } else {
       alert('Invalid Code!');
     }
   };
@@ -173,12 +177,12 @@ export default function Profile() {
           )}
         </div>
 
-        {/* Admin Panel Link for Testing */}
+        {/* Admin Panel Link */}
         <ProfileMenuItem 
           icon={LayoutDashboard} 
-          label="1" 
+          label="Admin Panel" 
           textClass="text-blue-400"
-          onClick={handleAdminAccess}
+          onClick={() => setShowAdminModal(true)}
         />
         
         <ProfileMenuItem icon={Bell} label={t.notifications} />
@@ -213,6 +217,42 @@ export default function Profile() {
                 className="flex-1 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition"
               >
                 {t.save}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Code Modal */}
+      {showAdminModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-[#1a1d24] w-full max-w-xs rounded-2xl p-6 border border-neutral-800 shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-4">Admin Access</h3>
+            <p className="text-sm text-neutral-400 mb-4">Please enter the admin security code to continue.</p>
+            <input 
+              type="password" 
+              value={adminCode}
+              onChange={(e) => setAdminCode(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAdminSubmit()}
+              className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2 text-white outline-none focus:border-red-500 mb-6"
+              placeholder="Enter code..."
+              autoFocus
+            />
+            <div className="flex space-x-3 rtl:space-x-reverse">
+              <button 
+                onClick={() => {
+                  setShowAdminModal(false);
+                  setAdminCode('');
+                }}
+                className="flex-1 py-2 bg-neutral-800 text-white rounded-lg font-medium hover:bg-neutral-700 transition"
+              >
+                {t.cancel}
+              </button>
+              <button 
+                onClick={handleAdminSubmit}
+                className="flex-1 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition"
+              >
+                Enter
               </button>
             </div>
           </div>
