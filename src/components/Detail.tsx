@@ -47,7 +47,11 @@ export default function Detail({ item, onBack }: { item: any, onBack: () => void
   const isIframeLink = selectedServerUrl?.includes('t.me') || 
                        selectedServerUrl?.includes('telegram.me') || 
                        selectedServerUrl?.includes('ok.ru') ||
-                       selectedServerUrl?.includes('vk.com');
+                       selectedServerUrl?.includes('vk.com') ||
+                       servers.find(s => s.url === selectedServerUrl)?.name === 'ok' ||
+                       servers.find(s => s.url === selectedServerUrl)?.name === 'VK' ||
+                       servers.find(s => s.url === selectedServerUrl)?.name === 'embed' ||
+                       servers.find(s => s.url === selectedServerUrl)?.name === 'telegram';
   
   // Convert standard links to embed links if needed
   const getEmbedUrl = (url: string) => {
@@ -59,6 +63,11 @@ export default function Detail({ item, onBack }: { item: any, onBack: () => void
     }
     if (url.includes('ok.ru/video/')) {
       return url.replace('ok.ru/video/', 'ok.ru/videoembed/');
+    }
+    if (url.includes('vk.com/video')) {
+      // Basic conversion for VK, though usually users should provide the iframe src directly
+      // Example: https://vk.com/video_ext.php?oid=...&id=...&hash=...
+      return url; 
     }
     return url;
   };
@@ -235,7 +244,16 @@ export default function Detail({ item, onBack }: { item: any, onBack: () => void
                       <Server size={20} />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-white">{server.name}</p>
+                      <p className="font-semibold text-white">
+                        {server.name === 'ok' ? 'OK.ru' : 
+                         server.name === 'VK' ? 'VK.com' : 
+                         server.name === 'telegram' ? 'Telegram' : 
+                         server.name === 'embed' ? 'Embed Server' : 
+                         server.name === 'm3u8' ? 'HLS Stream' : 
+                         server.name === 'mp4' ? 'Direct MP4' : 
+                         server.name === 'youtube' ? 'YouTube' : 
+                         server.name}
+                      </p>
                       <p className="text-xs text-neutral-400 mt-0.5">{server.url.includes('youtube') ? 'YouTube' : server.url.includes('t.me') ? 'Telegram' : server.url.includes('ok.ru') ? 'OK.ru' : 'Direct Stream'}</p>
                     </div>
                   </div>

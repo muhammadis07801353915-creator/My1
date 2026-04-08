@@ -324,21 +324,28 @@ export default function Movies() {
                       
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 pr-8">
                         <div className="space-y-1">
-                          <label className="text-xs text-neutral-400">Server Name (e.g. YouTube, OK.ru)</label>
-                          <input 
-                            type="text" 
+                          <label className="text-xs text-neutral-400">Server Type</label>
+                          <select 
                             value={server.name}
                             onChange={(e) => {
                               const newServers = [...formData.servers];
                               newServers[index].name = e.target.value;
                               setFormData({...formData, servers: newServers});
                             }}
-                            placeholder="Server Name" 
                             className="w-full bg-[#1a1d24] border border-neutral-800 rounded-md px-3 py-2 text-sm text-white outline-none focus:border-red-500 transition" 
-                          />
+                          >
+                            <option value="ok">OK.ru</option>
+                            <option value="VK">VK.com</option>
+                            <option value="embed">Embed (Iframe)</option>
+                            <option value="telegram">Telegram</option>
+                            <option value="m3u8">M3U8 (HLS)</option>
+                            <option value="mp4">MP4 (Direct)</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="Server 1">Default Server</option>
+                          </select>
                         </div>
                         <div className="space-y-1 md:col-span-2">
-                          <label className="text-xs text-neutral-400">URL (Telegram link, m3u8, mp4, etc.)</label>
+                          <label className="text-xs text-neutral-400">URL</label>
                           <input 
                             type="text" 
                             value={server.url} 
