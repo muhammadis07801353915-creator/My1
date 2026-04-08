@@ -56,20 +56,27 @@ export default function Detail({ item, onBack }: { item: any, onBack: () => void
   // Convert standard links to embed links if needed
   const getEmbedUrl = (url: string) => {
     if (!url) return '';
-    if (url.includes('t.me') || url.includes('telegram.me')) {
-      if (url.includes('embed=1')) return url;
-      const separator = url.includes('?') ? '&' : '?';
-      return `${url}${separator}embed=1`;
+    
+    let finalUrl = url.trim();
+    // Ensure URL has protocol to prevent relative path routing errors (like Vercel 500 errors)
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+      finalUrl = 'https://' + finalUrl;
     }
-    if (url.includes('ok.ru/video/')) {
-      return url.replace('ok.ru/video/', 'ok.ru/videoembed/');
+
+    if (finalUrl.includes('t.me') || finalUrl.includes('telegram.me')) {
+      if (finalUrl.includes('embed=1')) return finalUrl;
+      const separator = finalUrl.includes('?') ? '&' : '?';
+      return `${finalUrl}${separator}embed=1`;
     }
-    if (url.includes('vk.com/video')) {
+    if (finalUrl.includes('ok.ru/video/')) {
+      return finalUrl.replace('ok.ru/video/', 'ok.ru/videoembed/');
+    }
+    if (finalUrl.includes('vk.com/video')) {
       // Basic conversion for VK, though usually users should provide the iframe src directly
       // Example: https://vk.com/video_ext.php?oid=...&id=...&hash=...
-      return url; 
+      return finalUrl; 
     }
-    return url;
+    return finalUrl;
   };
   return (
     <div className="bg-neutral-950 min-h-screen text-white pb-24">
@@ -96,7 +103,6 @@ export default function Detail({ item, onBack }: { item: any, onBack: () => void
                   src={getEmbedUrl(selectedServerUrl)} 
                   className="w-full h-full border-0 absolute inset-0"
                   allowFullScreen
-                  sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-forms"
                 ></iframe>
               ) : isM3u8 ? (
                 <HlsPlayer 
