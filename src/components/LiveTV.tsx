@@ -235,19 +235,6 @@ export default function LiveTV() {
             </button>
           </div>
           
-          <div className="flex shrink-0 justify-center items-center">
-            <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
-              <div className="relative">
-                <Tv size={22} className="text-red-600" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-pulse" />
-              </div>
-              <div className="text-xl font-bold italic tracking-tighter flex items-center">
-                <span className="text-red-500">my</span>
-                <span className="text-white">TV+</span>
-              </div>
-            </div>
-          </div>
-
           <div className="flex-1 flex justify-end">
             <button 
               onClick={() => setIsSearchOpen(true)}
