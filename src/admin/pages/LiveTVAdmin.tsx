@@ -207,19 +207,27 @@ export default function LiveTVAdmin() {
   }
 
   const moveChannel = async (index: number, direction: 'up' | 'down') => {
-    const filteredChannels = channels.filter(c => selectedCategory === 'All' || c.category === selectedCategory);
+    const filtered = channels.filter(c => selectedCategory === 'All' || c.category === selectedCategory);
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     
-    if (targetIndex < 0 || targetIndex >= filteredChannels.length) return;
+    if (targetIndex < 0 || targetIndex >= filtered.length) return;
 
-    const currentItem = filteredChannels[index];
-    const targetItem = filteredChannels[targetIndex];
+    // Create a new array with the moved item
+    const newFiltered = [...filtered];
+    const [movedItem] = newFiltered.splice(index, 1);
+    newFiltered.splice(targetIndex, 0, movedItem);
+
+    // Update the main channels state optimistically
+    const otherChannels = channels.filter(c => selectedCategory !== 'All' && c.category !== selectedCategory);
+    const updatedAllChannels = [...newFiltered, ...otherChannels];
+    setChannels(updatedAllChannels);
 
     try {
-      await Promise.all([
-        supabase.from('channels').update({ order_index: targetItem.order_index }).eq('id', currentItem.id),
-        supabase.from('channels').update({ order_index: currentItem.order_index }).eq('id', targetItem.id)
-      ]);
+      // Update sequential order_index for ALL channels to keep it clean
+      const updates = updatedAllChannels.map((chan, i) => 
+        supabase.from('channels').update({ order_index: i }).eq('id', chan.id)
+      );
+      await Promise.all(updates);
       fetchChannels();
     } catch (err) {
       console.error("Error reordering channels:", err);

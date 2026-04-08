@@ -95,22 +95,20 @@ export default function LiveTVCategories() {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= categories.length) return;
 
-    const currentItem = categories[index];
-    const targetItem = categories[targetIndex];
+    const newCategories = [...categories];
+    const [movedItem] = newCategories.splice(index, 1);
+    newCategories.splice(targetIndex, 0, movedItem);
 
-    // Optimistic update
-    const updatedCats = [...categories];
-    const tempOrder = currentItem.order_index;
-    updatedCats[index].order_index = targetItem.order_index;
-    updatedCats[targetIndex].order_index = tempOrder;
-    updatedCats.sort((a, b) => a.order_index - b.order_index);
-    setCategories(updatedCats);
+    // Optimistic update for smooth UI
+    setCategories(newCategories);
 
     try {
-      await Promise.all([
-        supabase.from('channel_categories').update({ order_index: targetItem.order_index }).eq('id', currentItem.id),
-        supabase.from('channel_categories').update({ order_index: currentItem.order_index }).eq('id', targetItem.id)
-      ]);
+      // Update all items with their new sequential index
+      const updates = newCategories.map((cat, i) => 
+        supabase.from('channel_categories').update({ order_index: i }).eq('id', cat.id)
+      );
+      
+      await Promise.all(updates);
     } catch (err) {
       console.error("Error reordering:", err);
     }
