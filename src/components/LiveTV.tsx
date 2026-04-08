@@ -236,18 +236,15 @@ export default function LiveTV() {
           </div>
           
           <div className="flex shrink-0 justify-center items-center">
-            <img 
-              src="https://i.ibb.co/bMPPbYR2/with-text-wight-1.png" 
-              alt="Logo" 
-              className="h-6 object-contain"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-              }}
-            />
-            <div className="hidden text-xl font-bold italic tracking-tighter">
-              <span className="text-red-500">my</span>TV+
+            <div className="flex items-center space-x-1.5 rtl:space-x-reverse">
+              <div className="relative">
+                <Tv size={22} className="text-red-600" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-pulse" />
+              </div>
+              <div className="text-xl font-bold italic tracking-tighter flex items-center">
+                <span className="text-red-500">my</span>
+                <span className="text-white">TV+</span>
+              </div>
             </div>
           </div>
 
