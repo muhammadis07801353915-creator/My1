@@ -4,6 +4,7 @@ import AdminLayout from './admin/AdminLayout';
 import Dashboard from './admin/pages/Dashboard';
 import Users from './admin/pages/Users';
 import Movies from './admin/pages/Movies';
+import TopContents from './admin/pages/TopContents';
 import MovieLists from './admin/pages/MovieLists';
 import LiveTVCategories from './admin/pages/LiveTVCategories';
 import LiveTVAdmin from './admin/pages/LiveTVAdmin';
@@ -23,6 +24,7 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="users" element={<Users />} />
             <Route path="movies" element={<Movies />} />
+            <Route path="top-contents" element={<TopContents />} />
             <Route path="movie-lists" element={<MovieLists />} />
             <Route path="livetv-categories" element={<LiveTVCategories />} />
             <Route path="livetv" element={<LiveTVAdmin />} />

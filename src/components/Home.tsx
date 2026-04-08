@@ -1,13 +1,15 @@
-import { Play, Plus, Star } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Plus, Star, ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../lib/LanguageContext';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
   const { t } = useLanguage();
   const [movies, setMovies] = useState<any[]>([]);
   const [movieLists, setMovieLists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,6 +37,27 @@ export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
     fetchData();
   }, []);
 
+  const featuredMovies = movies.filter(m => m.is_featured);
+  
+  const nextFeatured = useCallback(() => {
+    if (featuredMovies.length === 0) return;
+    setCurrentFeaturedIndex((prev) => (prev + 1) % featuredMovies.length);
+  }, [featuredMovies.length]);
+
+  const prevFeatured = useCallback(() => {
+    if (featuredMovies.length === 0) return;
+    setCurrentFeaturedIndex((prev) => (prev - 1 + featuredMovies.length) % featuredMovies.length);
+  }, [featuredMovies.length]);
+
+  useEffect(() => {
+    if (featuredMovies.length <= 1) return;
+    const interval = setInterval(nextFeatured, 5000);
+    return () => clearInterval(interval);
+  }, [featuredMovies.length, nextFeatured]);
+
+  const currentFeatured = featuredMovies.length > 0 ? featuredMovies[currentFeaturedIndex] : movies[0];
+  const topContents = movies.filter(m => m.top_rank).sort((a, b) => (a.top_rank || 99) - (b.top_rank || 99));
+
   if (loading) {
     return <div className="flex items-center justify-center h-[65vh]"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div></div>;
   }
@@ -43,34 +66,115 @@ export default function Home({ onSelect }: { onSelect: (item: any) => void }) {
     return <div className="flex items-center justify-center h-[65vh] text-neutral-400">No content available</div>;
   }
 
-  const featured = movies[0];
-
   return (
     <div className="pb-24">
-      {/* Featured Hero */}
-      <div className="relative h-[65vh] w-full cursor-pointer" onClick={() => onSelect(featured)}>
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/40 to-transparent z-10" />
-        <img src={featured.image} alt={featured.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-        
-        <div className="absolute bottom-0 left-0 w-full p-6 z-20 flex flex-col items-center text-center">
-          <h1 className="text-4xl font-bold mb-2 text-white drop-shadow-lg">{featured.title}</h1>
-          <div className="flex items-center space-x-3 text-sm text-neutral-300 mb-6">
-            <span className="flex items-center text-yellow-500"><Star size={14} className="mr-1 fill-current" /> {featured.rating}</span>
-            <span>|</span>
-            <span>{featured.year}</span>
-            <span>|</span>
-            <span>{featured.genre}</span>
-          </div>
-          <div className="flex space-x-4 w-full max-w-xs">
-            <button className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-full flex items-center justify-center font-semibold transition">
-              <Play size={18} className="mr-2 fill-current" /> {t.watchNow}
-            </button>
-            <button className="w-12 h-12 bg-neutral-800/80 hover:bg-neutral-700 rounded-full flex items-center justify-center text-white backdrop-blur-sm transition">
-              <Plus size={24} />
-            </button>
-          </div>
+      {/* Featured Hero Slider - Video Style */}
+      <div className="relative h-[75vh] w-full overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentFeatured.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="absolute inset-0"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.x > 50) prevFeatured();
+              else if (info.offset.x < -50) nextFeatured();
+            }}
+          >
+            {/* Blurred Background */}
+            <div className="absolute inset-0 z-0">
+              <img 
+                src={currentFeatured.image} 
+                className="w-full h-full object-cover blur-3xl scale-110 opacity-40" 
+                alt=""
+              />
+              <div className="absolute inset-0 bg-neutral-950/60" />
+            </div>
+
+            {/* Content Wrapper */}
+            <div className="relative z-10 h-full flex flex-col items-center justify-center px-6 pt-10">
+              {/* Vertical Poster */}
+              <motion.div 
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                className="w-full max-w-[260px] aspect-[2/3] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 cursor-pointer"
+                onClick={() => onSelect(currentFeatured)}
+              >
+                <img 
+                  src={currentFeatured.image} 
+                  alt={currentFeatured.title} 
+                  className="w-full h-full object-cover" 
+                  referrerPolicy="no-referrer" 
+                />
+              </motion.div>
+
+              {/* Metadata Below Poster */}
+              <div className="mt-8 text-center">
+                <h1 className="text-3xl font-bold text-white mb-2 drop-shadow-md">{currentFeatured.title}</h1>
+                <div className="flex items-center justify-center space-x-2 text-neutral-400 text-sm mb-3">
+                  <span>{currentFeatured.genre?.split(',')[0]}</span>
+                  <span className="w-1 h-1 rounded-full bg-neutral-600" />
+                  <span>{currentFeatured.genre?.split(',')[1] || 'Action'}</span>
+                </div>
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="flex items-center text-yellow-500 font-bold text-lg">
+                    <Star size={20} className="mr-1.5 fill-current" />
+                    {currentFeatured.rating}
+                  </div>
+                  <span className="text-neutral-700 text-xl">|</span>
+                  <span className="text-neutral-300 text-lg font-medium">{currentFeatured.year}</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Indicators */}
+        <div className="absolute bottom-10 left-0 right-0 z-20 flex justify-center space-x-2">
+          {featuredMovies.map((_, idx) => (
+            <div 
+              key={idx} 
+              className={`h-1.5 rounded-full transition-all duration-500 ${idx === currentFeaturedIndex ? 'w-8 bg-red-600' : 'w-2 bg-white/20'}`}
+            />
+          ))}
         </div>
       </div>
+
+      {/* Top Contents Section - Video Style */}
+      {topContents.length > 0 && (
+        <div className="mt-6 px-4">
+          <h2 className="text-2xl font-bold text-white mb-6">Top Contents</h2>
+          <div className="flex space-x-4 overflow-x-auto pb-8 scrollbar-hide -mx-4 px-4">
+            {topContents.map((movie, index) => (
+              <div key={movie.id} className="flex-none w-44 relative cursor-pointer group" onClick={() => onSelect(movie)}>
+                <div className="relative overflow-hidden rounded-xl shadow-lg aspect-[2/3] border border-white/5">
+                  <img 
+                    src={movie.image} 
+                    alt={movie.title} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                    referrerPolicy="no-referrer"
+                  />
+                  {/* Type Badge */}
+                  <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold text-white border border-white/10 uppercase">
+                    {movie.type}
+                  </div>
+                  
+                  {/* Large Outline Number */}
+                  <div className="absolute -bottom-4 -right-2 z-10 select-none pointer-events-none">
+                    <span className="text-[140px] font-black text-white leading-none tracking-tighter drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] opacity-90">
+                      {index + 1}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Dynamic Movie Lists */}
       {movieLists.map((list) => {

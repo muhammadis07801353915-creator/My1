@@ -8,7 +8,8 @@ import {
   LogOut,
   Bell,
   Search,
-  List as ListIcon
+  List as ListIcon,
+  Trophy
 } from 'lucide-react';
 
 export default function AdminLayout() {
@@ -17,6 +18,7 @@ export default function AdminLayout() {
     { name: 'Dashboard', path: '/admin', icon: <LayoutDashboard size={20} /> },
     { name: 'Users', path: '/admin/users', icon: <Users size={20} /> },
     { name: 'Movies & Series', path: '/admin/movies', icon: <Film size={20} /> },
+    { name: 'Top Contents', path: '/admin/top-contents', icon: <Trophy size={20} /> },
     { name: 'Movie Lists', path: '/admin/movie-lists', icon: <ListIcon size={20} /> },
     { name: 'Live TV Categories', path: '/admin/livetv-categories', icon: <ListIcon size={20} /> },
     { name: 'Live TV', path: '/admin/livetv', icon: <Tv size={20} /> },

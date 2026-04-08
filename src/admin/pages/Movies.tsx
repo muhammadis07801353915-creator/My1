@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Plus, Search, Edit, Trash2, Film, Tv, DownloadCloud, 
-  Image as ImageIcon, Link as LinkIcon, Users, Settings, Type
+  Image as ImageIcon, Link as LinkIcon, Users, Settings, Type, Star
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import ImageUpload from '../../components/ImageUpload';
@@ -18,6 +18,8 @@ export default function Movies() {
   const [formData, setFormData] = useState({
     title: '', type: 'Movie', genre: '', year: '', description: '', rating: '', image: '', backdrop: '', duration: '',
     list_name: '',
+    is_featured: false,
+    top_rank: '',
     servers: [{ name: 'Server 1', url: '', quality: 'Auto' }]
   });
 
@@ -60,6 +62,8 @@ export default function Movies() {
     setFormData({ 
       title: '', type: 'Movie', genre: '', year: '', description: '', rating: '', image: '', backdrop: '', duration: '',
       list_name: '',
+      is_featured: false,
+      top_rank: '',
       servers: [{ name: 'Server 1', url: '', quality: 'Auto' }]
     });
     setEditingId(null);
@@ -89,6 +93,8 @@ export default function Movies() {
       backdrop: item.backdrop || '',
       duration: item.duration || '',
       list_name: item.list_name || '',
+      is_featured: item.is_featured || false,
+      top_rank: item.top_rank?.toString() || '',
       servers: parsedServers
     });
     setEditingId(item.id);
@@ -128,6 +134,8 @@ export default function Movies() {
       image: formData.image,
       backdrop: formData.backdrop,
       list_name: formData.list_name,
+      is_featured: formData.is_featured,
+      top_rank: formData.top_rank && !isNaN(parseInt(formData.top_rank)) ? parseInt(formData.top_rank) : null,
       video_url: JSON.stringify(formData.servers)
     };
 
@@ -389,9 +397,28 @@ export default function Movies() {
                       <p className="text-sm text-neutral-400">Show in the top slider on home page</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer" 
+                        checked={formData.is_featured}
+                        onChange={(e) => setFormData({...formData, is_featured: e.target.checked})}
+                      />
                       <div className="w-11 h-6 bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
                     </label>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-neutral-900 border border-neutral-800 rounded-lg">
+                    <div>
+                      <p className="font-medium">Top Content Rank</p>
+                      <p className="text-sm text-neutral-400">Set rank (1-10) to show in Top Contents list. Leave empty to hide.</p>
+                    </div>
+                    <input 
+                      type="number" 
+                      value={formData.top_rank}
+                      onChange={(e) => setFormData({...formData, top_rank: e.target.value})}
+                      placeholder="e.g. 1"
+                      className="w-24 bg-[#1a1d24] border border-neutral-800 rounded-md px-3 py-2 text-sm text-white outline-none focus:border-red-500 transition"
+                    />
                   </div>
                 </div>
               </div>
@@ -455,6 +482,8 @@ export default function Movies() {
                 <th className="px-6 py-4 font-medium">Title</th>
                 <th className="px-6 py-4 font-medium">Type</th>
                 <th className="px-6 py-4 font-medium">Genre</th>
+                <th className="px-6 py-4 font-medium">Featured</th>
+                <th className="px-6 py-4 font-medium">Rank</th>
                 <th className="px-6 py-4 font-medium">Views</th>
                 <th className="px-6 py-4 font-medium">Status</th>
                 <th className="px-6 py-4 font-medium text-right">Actions</th>
@@ -472,6 +501,18 @@ export default function Movies() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-neutral-400">{item.genre}</td>
+                  <td className="px-6 py-4">
+                    {item.is_featured ? (
+                      <span className="text-yellow-500 flex items-center">
+                        <Star size={14} className="mr-1 fill-current" /> Yes
+                      </span>
+                    ) : (
+                      <span className="text-neutral-600">No</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-neutral-400">
+                    {item.top_rank ? `#${item.top_rank}` : '-'}
+                  </td>
                   <td className="px-6 py-4 text-neutral-400">{item.views}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
