@@ -188,6 +188,7 @@ export default function LiveTV() {
                   <img 
                     src={channel.image} 
                     alt={channel.name} 
+                    referrerPolicy="no-referrer"
                     className="max-w-full max-h-full object-contain opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all"
                   />
                 ) : (
@@ -239,12 +240,13 @@ export default function LiveTV() {
               src="https://i.ibb.co/bMPPbYR2/with-text-wight-1.png" 
               alt="Logo" 
               className="h-6 object-contain"
+              referrerPolicy="no-referrer"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
                 (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
               }}
             />
-            <div className="hidden text-2xl font-bold italic tracking-tighter">
+            <div className="hidden text-xl font-bold italic tracking-tighter">
               <span className="text-red-500">my</span>TV+
             </div>
           </div>
@@ -280,6 +282,7 @@ export default function LiveTV() {
                     <img 
                       src={channel.image} 
                       alt={channel.name} 
+                      referrerPolicy="no-referrer"
                       className="max-w-full max-h-full object-contain opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all"
                     />
                   ) : (
@@ -304,6 +307,7 @@ export default function LiveTV() {
             <img 
               src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=800&h=400" 
               alt="Main Banner" 
+              referrerPolicy="no-referrer"
               className="w-full h-48 object-cover"
             />
           </div>
@@ -346,6 +350,7 @@ export default function LiveTV() {
                       <img 
                         src={channel.image} 
                         alt={channel.name} 
+                        referrerPolicy="no-referrer"
                         className="max-w-full max-h-full object-contain opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all"
                       />
                     ) : (
@@ -364,6 +369,7 @@ export default function LiveTV() {
                   <img 
                     src={banners[index % banners.length].image} 
                     alt="Promo Banner" 
+                    referrerPolicy="no-referrer"
                     className="w-full h-20 object-cover rounded-lg"
                   />
                 </div>
