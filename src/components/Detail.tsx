@@ -1,4 +1,4 @@
-import { ArrowLeft, Share2, BookmarkPlus, BookmarkCheck, Play, Star, Download, MonitorPlay, X, Server } from 'lucide-react';
+import { ArrowLeft, Share2, BookmarkPlus, BookmarkCheck, Play, Star, Download, MonitorPlay, X, Server, ExternalLink } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import ReactPlayer from 'react-player';
 import HlsPlayer from './HlsPlayer';
@@ -58,6 +58,8 @@ export default function Detail({ item, onBack }: { item: any, onBack: () => void
     if (!url) return '';
     
     let finalUrl = url.trim();
+    finalUrl = finalUrl.replace(/^\/+/, ''); // Remove any accidental leading slashes
+    
     // Ensure URL has protocol to prevent relative path routing errors (like Vercel 500 errors)
     if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
       finalUrl = 'https://' + finalUrl;
@@ -99,11 +101,29 @@ export default function Detail({ item, onBack }: { item: any, onBack: () => void
                   No video source available
                 </div>
               ) : isIframeLink ? (
-                <iframe 
-                  src={getEmbedUrl(selectedServerUrl)} 
-                  className="w-full h-full border-0 absolute inset-0"
-                  allowFullScreen
-                ></iframe>
+                <div className="w-full h-full relative bg-black">
+                  <iframe 
+                    src={getEmbedUrl(selectedServerUrl)} 
+                    className="w-full h-full border-0 absolute inset-0 z-10"
+                    allowFullScreen
+                    allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write"
+                    referrerPolicy="origin"
+                  ></iframe>
+                  
+                  {/* Fallback button for mobile apps */}
+                  <div className="absolute bottom-4 right-4 z-20">
+                    <a 
+                      href={getEmbedUrl(selectedServerUrl)} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="bg-red-600/90 hover:bg-red-600 text-white px-3 py-2 sm:px-4 rounded-lg text-sm font-medium shadow-lg flex items-center gap-2 backdrop-blur-md transition-transform hover:scale-105"
+                    >
+                      <ExternalLink size={16} />
+                      <span className="hidden sm:inline">Open in Browser</span>
+                      <span className="sm:hidden">Open</span>
+                    </a>
+                  </div>
+                </div>
               ) : isM3u8 ? (
                 <HlsPlayer 
                   url={selectedServerUrl} 
