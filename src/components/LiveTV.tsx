@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronDown, CheckCircle2, ArrowLeft, Search, X, Users, Play } from 'lucide-react';
+import { ChevronDown, CheckCircle2, ArrowLeft, Search, X, Users, Play, Tv } from 'lucide-react';
 import { liveCategories, banners } from '../data/mockData';
 import { supabase } from '../lib/supabase';
 import ReactPlayer from 'react-player';
