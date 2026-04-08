@@ -9,11 +9,16 @@ import {
   Bell,
   Search,
   List as ListIcon,
-  Trophy
+  Trophy,
+  Menu,
+  X
 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const navItems = [
     { name: 'Dashboard', path: '/admin', icon: <LayoutDashboard size={20} /> },
     { name: 'Users', path: '/admin/users', icon: <Users size={20} /> },
@@ -29,14 +34,27 @@ export default function AdminLayout() {
     navigate('/');
   };
 
+  const closeSidebar = () => setIsSidebarOpen(false);
+
   return (
     <div className="flex h-screen bg-[#0f1115] text-white font-sans overflow-hidden">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-[#1a1d24] border-r border-neutral-800 flex flex-col">
-        <div className="h-16 flex items-center px-6 border-b border-neutral-800">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#1a1d24] border-r border-neutral-800 flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0`}>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-neutral-800 shrink-0">
           <div className="text-2xl font-bold italic tracking-tighter">
             <span className="text-red-500">my</span>TV+ <span className="text-sm text-neutral-400 not-italic font-normal ml-2">Admin</span>
           </div>
+          <button onClick={closeSidebar} className="md:hidden text-neutral-400 hover:text-white">
+            <X size={24} />
+          </button>
         </div>
         
         <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
@@ -45,6 +63,7 @@ export default function AdminLayout() {
               key={item.name}
               to={item.path}
               end={item.path === '/admin'}
+              onClick={closeSidebar}
               className={({ isActive }) =>
                 `flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
                   isActive 
@@ -59,7 +78,7 @@ export default function AdminLayout() {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-neutral-800">
+        <div className="p-4 border-t border-neutral-800 shrink-0">
           <button 
             onClick={handleLogout}
             className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors w-full"
@@ -73,14 +92,22 @@ export default function AdminLayout() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header */}
-        <header className="h-16 bg-[#1a1d24] border-b border-neutral-800 flex items-center justify-between px-8 shrink-0">
-          <div className="flex items-center bg-neutral-900 rounded-lg px-3 py-1.5 w-96 border border-neutral-800">
-            <Search size={18} className="text-neutral-500" />
-            <input 
-              type="text" 
-              placeholder="Search anything..." 
-              className="bg-transparent border-none outline-none text-sm ml-2 w-full text-white placeholder-neutral-500"
-            />
+        <header className="h-16 bg-[#1a1d24] border-b border-neutral-800 flex items-center justify-between px-4 md:px-8 shrink-0">
+          <div className="flex items-center">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="mr-4 text-neutral-400 hover:text-white md:hidden"
+            >
+              <Menu size={24} />
+            </button>
+            <div className="hidden md:flex items-center bg-neutral-900 rounded-lg px-3 py-1.5 w-96 border border-neutral-800">
+              <Search size={18} className="text-neutral-500" />
+              <input 
+                type="text" 
+                placeholder="Search anything..." 
+                className="bg-transparent border-none outline-none text-sm ml-2 w-full text-white placeholder-neutral-500"
+              />
+            </div>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -94,7 +121,7 @@ export default function AdminLayout() {
                 alt="Admin" 
                 className="w-8 h-8 rounded-full object-cover border border-neutral-700"
               />
-              <div className="text-sm">
+              <div className="hidden md:block text-sm">
                 <p className="font-medium text-white">Admin User</p>
                 <p className="text-xs text-neutral-500">Super Admin</p>
               </div>
@@ -103,7 +130,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-8 bg-[#0f1115]">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-[#0f1115]">
           <Outlet />
         </main>
       </div>

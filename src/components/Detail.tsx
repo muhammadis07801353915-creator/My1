@@ -46,7 +46,8 @@ export default function Detail({ item, onBack }: { item: any, onBack: () => void
 
   const isIframeLink = selectedServerUrl?.includes('t.me') || 
                        selectedServerUrl?.includes('telegram.me') || 
-                       selectedServerUrl?.includes('ok.ru');
+                       selectedServerUrl?.includes('ok.ru') ||
+                       selectedServerUrl?.includes('vk.com');
   
   // Convert standard links to embed links if needed
   const getEmbedUrl = (url: string) => {
@@ -56,7 +57,9 @@ export default function Detail({ item, onBack }: { item: any, onBack: () => void
       const separator = url.includes('?') ? '&' : '?';
       return `${url}${separator}embed=1`;
     }
-    // For ok.ru and others, assume the user provided the correct embed link
+    if (url.includes('ok.ru/video/')) {
+      return url.replace('ok.ru/video/', 'ok.ru/videoembed/');
+    }
     return url;
   };
   return (
@@ -84,6 +87,7 @@ export default function Detail({ item, onBack }: { item: any, onBack: () => void
                   src={getEmbedUrl(selectedServerUrl)} 
                   className="w-full h-full border-0 absolute inset-0"
                   allowFullScreen
+                  sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-forms"
                 ></iframe>
               ) : isM3u8 ? (
                 <HlsPlayer 
