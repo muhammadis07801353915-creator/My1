@@ -11,7 +11,7 @@ export async function translateLiveContent(channelName: string, category: string
 
     const prompt = `You are a real-time live translator for a TV channel called "${channelName}" (Category: "${category}").
     
-    CRITICAL INSTRUCTION: Do NOT generate general news summaries or random facts. You must generate a sequence of 5-8 continuous, conversational sentences that sound EXACTLY like what a person on TV is saying right now. 
+    CRITICAL INSTRUCTION: Do NOT generate general news summaries or random facts. You must generate a sequence of 15 to 20 continuous, conversational sentences that sound EXACTLY like what a person on TV is saying right now. 
     
     If it's a news channel, generate a continuous news report (e.g., "The president spoke today...", "He stated that...", "In other news...").
     If it's a movie/drama channel, generate a continuous dialogue between characters (e.g., "Where have you been?", "I was looking for you.", "We need to leave now.").
@@ -56,7 +56,22 @@ export async function translateLiveContent(channelName: string, category: string
     }
   } catch (error: any) {
     console.error("Gemini Translation Error Details:", error?.message || error);
-    // Return the actual error message to the UI so we can see what's wrong
-    return ["هەڵە: " + (error?.message || "نەزانراو").substring(0, 50)];
+    const errMsg = error?.message || "";
+    
+    // If it's a rate limit or high demand error, return a 3-item array 
+    // so the UI interval keeps running and automatically retries.
+    if (errMsg.includes("high demand") || errMsg.includes("429") || errMsg.includes("quota") || errMsg.includes("overloaded")) {
+      return [
+        "سێرڤەری زیرەکی دەستکرد قەرەباڵغە...", 
+        "تکایە کەمێک چاوەڕێ بە...", 
+        "سیستەمەکە خۆکارانە دووبارە هەوڵ دەداتەوە..."
+      ];
+    }
+    
+    return [
+      "هەڵەیەک ڕوویدا لە پەیوەندیکردن...", 
+      "دووبارە هەوڵ دەداتەوە...", 
+      "تکایە چاوەڕوان بە..."
+    ];
   }
 }
