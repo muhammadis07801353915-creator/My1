@@ -28,10 +28,12 @@ export async function translateLiveContent(channelName: string, category: string
       const cleanedText = text.replace(/```json|```/g, "").trim();
       return JSON.parse(cleanedText);
     } catch (e) {
+      console.error("Failed to parse Gemini response:", text);
       return ["بەخێربێن بۆ پەخشی ڕاستەوخۆ", `ئێستا سەیری ${channelName} دەکەن`];
     }
-  } catch (error) {
-    console.error("Gemini Translation Error:", error);
-    return ["هەڵەیەک ڕوویدا لە وەرگێڕان", "پەیوەندی بە سێرڤەرەوە پچڕا"];
+  } catch (error: any) {
+    console.error("Gemini Translation Error Details:", error?.message || error);
+    // Return the actual error message to the UI so we can see what's wrong
+    return ["هەڵە: " + (error?.message || "نەزانراو").substring(0, 50)];
   }
 }
