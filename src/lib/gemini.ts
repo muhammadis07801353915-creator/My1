@@ -9,9 +9,6 @@ export async function translateLiveContent(channelName: string, category: string
       return ["کلیلی API دانەنراوە", "تکایە VITE_GEMINI_API_KEY لە سێرڤەر زیاد بکە"];
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    
     const prompt = `You are a live AI translator for a movie/TV app. 
     The user is watching a live channel called "${channelName}" in the category "${category}".
     The channel is likely in English or Arabic.
@@ -19,9 +16,30 @@ export async function translateLiveContent(channelName: string, category: string
     Format the response as a JSON array of strings. 
     Only return the JSON array.`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    // Use REST API directly to avoid SDK fetch issues on Vercel
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.7,
+          }
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
     
     try {
       // Clean the response in case there's markdown
