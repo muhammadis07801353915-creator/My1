@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { ChevronDown, CheckCircle2, ArrowLeft, Search, X, Users, Play, Tv } from 'lucide-react';
+import { ChevronDown, CheckCircle2, ArrowLeft, Search, X, Users, Play, Tv, Languages, Sparkles } from 'lucide-react';
 import { liveCategories, banners } from '../data/mockData';
 import { supabase } from '../lib/supabase';
 import ReactPlayer from 'react-player';
 import HlsPlayer from './HlsPlayer';
 import { useLanguage } from '../lib/LanguageContext';
+import { translateLiveContent } from '../lib/gemini';
 
 export default function LiveTV() {
   const { t } = useLanguage();
@@ -19,6 +20,32 @@ export default function LiveTV() {
   
   // Player State
   const [playingChannel, setPlayingChannel] = useState<any | null>(null);
+  const [isAiSubtitlesEnabled, setIsAiSubtitlesEnabled] = useState(false);
+  const [currentSubtitles, setCurrentSubtitles] = useState<string[]>([]);
+  const [subtitleIndex, setSubtitleIndex] = useState(0);
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  useEffect(() => {
+    let interval: any;
+    if (isAiSubtitlesEnabled && currentSubtitles.length > 0) {
+      interval = setInterval(() => {
+        setSubtitleIndex((prev) => (prev + 1) % currentSubtitles.length);
+      }, 4000);
+    }
+    return () => clearInterval(interval);
+  }, [isAiSubtitlesEnabled, currentSubtitles]);
+
+  const toggleAiSubtitles = async () => {
+    if (!isAiSubtitlesEnabled) {
+      setIsTranslating(true);
+      const subs = await translateLiveContent(playingChannel.name, playingChannel.category);
+      setCurrentSubtitles(subs);
+      setIsAiSubtitlesEnabled(true);
+      setIsTranslating(false);
+    } else {
+      setIsAiSubtitlesEnabled(false);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -88,6 +115,21 @@ export default function LiveTV() {
         </div>
 
         <div className="w-full bg-black relative aspect-video md:h-[70vh] md:aspect-auto">
+          {/* Subtitle Overlay */}
+          {isAiSubtitlesEnabled && currentSubtitles.length > 0 && (
+            <div className="absolute bottom-12 left-0 w-full flex justify-center px-4 z-50 pointer-events-none">
+              <div className="bg-black/70 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10 text-center animate-fade-in">
+                <p className="text-white text-sm md:text-lg font-medium shadow-lg">
+                  {currentSubtitles[subtitleIndex]}
+                </p>
+                <div className="flex items-center justify-center mt-1 space-x-1">
+                  <Sparkles size={10} className="text-yellow-400 animate-pulse" />
+                  <span className="text-[10px] text-neutral-400 uppercase tracking-widest">AI Live Translation</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {(() => {
             const isIframeLink = playingChannel.stream_url?.includes('t.me') || 
                                  playingChannel.stream_url?.includes('telegram.me') ||
@@ -146,9 +188,29 @@ export default function LiveTV() {
               <h1 className="text-xl font-bold mb-1">{playingChannel.name}</h1>
               <p className="text-sm text-neutral-400">{playingChannel.category}</p>
             </div>
-            <div className="flex items-center space-x-1.5 text-neutral-300 bg-neutral-800 px-3 py-1.5 rounded-lg">
-              <Users size={16} className="text-red-500" />
-              <span className="font-medium text-sm">LIVE</span>
+            <div className="flex items-center space-x-2">
+              <button 
+                onClick={toggleAiSubtitles}
+                disabled={isTranslating}
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg transition-all ${
+                  isAiSubtitlesEnabled 
+                    ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' 
+                    : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                }`}
+              >
+                {isTranslating ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Languages size={18} className={isAiSubtitlesEnabled ? 'animate-pulse' : ''} />
+                )}
+                <span className="text-sm font-medium">
+                  {isAiSubtitlesEnabled ? 'Subtitles ON' : 'AI Subtitles'}
+                </span>
+              </button>
+              <div className="flex items-center space-x-1.5 text-neutral-300 bg-neutral-800 px-3 py-1.5 rounded-lg">
+                <Users size={16} className="text-red-500" />
+                <span className="font-medium text-sm">LIVE</span>
+              </div>
             </div>
           </div>
         </div>
