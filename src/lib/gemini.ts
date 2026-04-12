@@ -9,12 +9,16 @@ export async function translateLiveContent(channelName: string, category: string
       return ["کلیلی API دانەنراوە", "تکایە VITE_GEMINI_API_KEY لە سێرڤەر زیاد بکە"];
     }
 
-    const prompt = `You are a live AI translator for a movie/TV app. 
-    The user is watching a live channel called "${channelName}" in the category "${category}".
-    The channel is likely in English or Arabic.
-    Generate 3-5 short, realistic "live subtitles" in Kurdish Sorani that might be appearing on screen right now for this type of channel.
-    Format the response as a JSON array of strings. 
-    Only return the JSON array.`;
+    const prompt = `You are a real-time live translator for a TV channel called "${channelName}" (Category: "${category}").
+    
+    CRITICAL INSTRUCTION: Do NOT generate general news summaries or random facts. You must generate a sequence of 5-8 continuous, conversational sentences that sound EXACTLY like what a person on TV is saying right now. 
+    
+    If it's a news channel, generate a continuous news report (e.g., "The president spoke today...", "He stated that...", "In other news...").
+    If it's a movie/drama channel, generate a continuous dialogue between characters (e.g., "Where have you been?", "I was looking for you.", "We need to leave now.").
+    
+    The translation MUST be in Kurdish Sorani.
+    Format the response as a simple JSON array of strings, where each string is the next sentence spoken.
+    Only return the JSON array, nothing else.`;
 
     // Use REST API directly to avoid SDK fetch issues on Vercel
     // Updated model name to gemini-2.5-flash which is the current supported model
@@ -28,7 +32,7 @@ export async function translateLiveContent(channelName: string, category: string
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
-            temperature: 0.7,
+            temperature: 0.8, // Slightly higher for more varied dialogue
           }
         }),
       }

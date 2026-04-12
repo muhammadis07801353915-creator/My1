@@ -29,11 +29,31 @@ export default function LiveTV() {
     let interval: any;
     if (isAiSubtitlesEnabled && currentSubtitles.length > 0) {
       interval = setInterval(() => {
-        setSubtitleIndex((prev) => (prev + 1) % currentSubtitles.length);
+        setSubtitleIndex((prev) => {
+          // If we are at the second to last subtitle, fetch the next batch in the background
+          if (prev === currentSubtitles.length - 2 && !isTranslating) {
+            setIsTranslating(true);
+            translateLiveContent(playingChannel.name, playingChannel.category).then(newSubs => {
+              setCurrentSubtitles(newSubs);
+              setSubtitleIndex(0);
+              setIsTranslating(false);
+            }).catch(err => {
+              console.error("Failed to fetch next subtitles:", err);
+              setIsTranslating(false);
+            });
+          }
+          
+          // If we reached the end but new ones haven't arrived yet, stay on the last one
+          if (prev >= currentSubtitles.length - 1) {
+            return prev;
+          }
+          
+          return prev + 1;
+        });
       }, 4000);
     }
     return () => clearInterval(interval);
-  }, [isAiSubtitlesEnabled, currentSubtitles]);
+  }, [isAiSubtitlesEnabled, currentSubtitles, playingChannel, isTranslating]);
 
   const toggleAiSubtitles = async () => {
     if (!isAiSubtitlesEnabled) {
