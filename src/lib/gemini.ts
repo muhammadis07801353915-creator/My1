@@ -17,8 +17,9 @@ export async function translateLiveContent(channelName: string, category: string
     Only return the JSON array.`;
 
     // Use REST API directly to avoid SDK fetch issues on Vercel
+    // Updated model name to gemini-1.5-flash-latest which is the correct REST endpoint
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: {
