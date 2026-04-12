@@ -1,9 +1,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "");
-
 export async function translateLiveContent(channelName: string, category: string) {
   try {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      console.error("Gemini API Key is missing!");
+      return ["کلیلی API دانەنراوە", "تکایە VITE_GEMINI_API_KEY لە سێرڤەر زیاد بکە"];
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const prompt = `You are a live AI translator for a movie/TV app. 
@@ -22,10 +28,10 @@ export async function translateLiveContent(channelName: string, category: string
       const cleanedText = text.replace(/```json|```/g, "").trim();
       return JSON.parse(cleanedText);
     } catch (e) {
-      return ["بەخێربێن بۆ پەخشی ڕاستەوخۆ", "ئێستا سەیری ${channelName} دەکەن"];
+      return ["بەخێربێن بۆ پەخشی ڕاستەوخۆ", `ئێستا سەیری ${channelName} دەکەن`];
     }
   } catch (error) {
     console.error("Gemini Translation Error:", error);
-    return ["هەڵەیەک ڕوویدا لە وەرگێڕان"];
+    return ["هەڵەیەک ڕوویدا لە وەرگێڕان", "پەیوەندی بە سێرڤەرەوە پچڕا"];
   }
 }
